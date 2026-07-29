@@ -3,6 +3,7 @@ services:
     build: .
     container_name: jellyfin-recommendations
     restart: unless-stopped
+    network_mode: host
     environment:
       JELLYFIN_URL: "http://127.0.0.1:8096"
       JELLYFIN_API_KEY: "<jellyfin-api-key-removed>"

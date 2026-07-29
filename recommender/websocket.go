@@ -18,7 +18,7 @@ func (s *StateManager) StartWebSocketListener(ctx context.Context) {
 	wsURL := strings.Replace(s.Config.ServerURL, "https://", "wss://", 1)
 	wsURL = strings.Replace(wsURL, "http://", "ws://", 1)
 
-	fullURL := fmt.Sprintf("%s/socket?api_key=%s", wsURL, s.Config.APIKey)
+	fullURL := fmt.Sprintf("%s/socket", wsURL)
 
 	backoff := time.Second
 	maxBackoff := s.Config.WSReconnectMax
@@ -32,7 +32,10 @@ func (s *StateManager) StartWebSocketListener(ctx context.Context) {
 		log.Printf("Connecting to Jellyfin WebSocket at %s", s.Config.ServerURL)
 
 		dialer := websocket.DefaultDialer
-		conn, _, err := dialer.Dial(fullURL, http.Header{})
+		header := http.Header{}
+		header.Set("Authorization", authHeader(s.Config.APIKey))
+
+		conn, _, err := dialer.Dial(fullURL, header)
 		if err != nil {
 			log.Printf("WebSocket connection failed: %v. Retrying in %v", err, backoff)
 			select {
