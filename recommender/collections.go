@@ -181,15 +181,48 @@ func (s *StateManager) createCollectionWithImage(name, userID, initialItemID str
 	if err != nil {
 		return "", err
 	}
-	imageBytes, contentType, err := s.getItemPrimaryImage(initialItemID)
+
+	// Try user avatar first, fall back to a random favorite poster
+	imageBytes, contentType, err := s.getUserProfilePicture(userID)
 	if err != nil {
-		log.Printf("Warning: poster for %s: %v", initialItemID, err)
+		log.Printf("Avatar unavailable for %s, falling back to poster for %s: %v", userID, initialItemID, err)
+		imageBytes, contentType, err = s.getItemPrimaryImage(initialItemID)
+	}
+	if err != nil {
+		log.Printf("Warning: no image for %q: %v", name, err)
 		return newID, nil
 	}
 	if err := s.setCollectionImage(newID, imageBytes, contentType); err != nil {
-		log.Printf("Warning: failed to set collection image for %s: %v", name, err)
+		log.Printf("Warning: failed to set collection image for %q: %v", name, err)
 	}
 	return newID, nil
+}
+
+func (s *StateManager) getUserProfilePicture(userID string) ([]byte, string, error) {
+	reqURL := fmt.Sprintf("%s/Users/%s/Images/Primary", s.Config.ServerURL, userID)
+	req, err := http.NewRequest(http.MethodGet, reqURL, nil)
+	if err != nil {
+		return nil, "", err
+	}
+	req.Header.Set("Authorization", authHeader(s.Config.APIKey))
+
+	resp, err := s.newHTTPClient().Do(req)
+	if err != nil {
+		return nil, "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, "", fmt.Errorf("avatar HTTP %d", resp.StatusCode)
+	}
+
+	ct := resp.Header.Get("Content-Type")
+	if ct == "" {
+		ct = "image/jpeg"
+	}
+
+	data, err := io.ReadAll(resp.Body)
+	return data, ct, err
 }
 
 func (s *StateManager) getItemPrimaryImage(itemID string) ([]byte, string, error) {
