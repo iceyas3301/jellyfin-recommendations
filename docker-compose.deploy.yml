@@ -1,0 +1,15 @@
+services:
+  jellyfin-recommendations:
+    build: .
+    container_name: jellyfin-recommendations
+    restart: unless-stopped
+    environment:
+      JELLYFIN_URL: "http://127.0.0.1:8096"
+      JELLYFIN_API_KEY: "<jellyfin-api-key-removed>"
+      SYNC_INTERVAL: "20m"
+      COLLECTION_PREFIX: "★ "
+      EXCLUDE_USERS: "sample-user"
+      DRY_RUN: "true"
+      HTTP_TIMEOUT: "30s"
+      RETRY_MAX_ATTEMPTS: "3"
+      DEBUG: "true"

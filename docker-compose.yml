@@ -1,0 +1,33 @@
+services:
+  jellyfin-recommendations:
+    image: ghcr.io/amr-as90/jellyfin-recommendations:latest
+    # Or build locally:
+    # build: .
+    container_name: jellyfin-recommendations
+    restart: unless-stopped
+    environment:
+      # Required
+      JELLYFIN_URL: "http://your-jellyfin-host:8096"
+      JELLYFIN_API_KEY: "your-api-key"
+      
+      # Sync interval (default: 20m)
+      SYNC_INTERVAL: "20m"
+      
+      # Prefix for collection names (default: none)
+      # Use this to namespace collections and avoid conflicts
+      # COLLECTION_PREFIX: "★ "
+      
+      # Exclude users from having collections created (comma-separated names or IDs)
+      # EXCLUDE_USERS: "admin,LocalUsers"
+      
+      # Dry run mode - log changes without applying (default: false)
+      # DRY_RUN: "true"
+      
+      # HTTP request timeout (default: 30s)
+      HTTP_TIMEOUT: "30s"
+      
+      # Max retry attempts for HTTP calls (default: 3)
+      RETRY_MAX_ATTEMPTS: "3"
+      
+      # Debug logging (default: false)
+      # DEBUG: "true"
