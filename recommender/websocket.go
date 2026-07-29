@@ -52,7 +52,7 @@ func (s *StateManager) StartWebSocketListener(ctx context.Context) {
 		log.Println("Connected to Jellyfin WebSocket")
 
 		// Subscribe to UserDataChanged events (favorites, watched, etc.)
-		subMsg := `{"MessageType":"UserDataChanged","Data":"0,1000"}`
+		subMsg := `{"MessageType":"UserDataChanged"}`
 		if err := conn.WriteMessage(websocket.TextMessage, []byte(subMsg)); err != nil {
 			log.Printf("Failed to send subscription: %v", err)
 			conn.Close()
@@ -105,8 +105,8 @@ func (s *StateManager) StartWebSocketListener(ctx context.Context) {
 	}
 }
 
-func (s *StateManager) handleUserDataChanged(data UserDataChanged) {
-	for _, change := range data.UserDataList {
+func (s *StateManager) handleUserDataChanged(data []UserDataChangeItem) {
+	for _, change := range data {
 		userID := change.UserID
 		itemID := change.ItemID
 		isFav := change.Data.IsFavorite

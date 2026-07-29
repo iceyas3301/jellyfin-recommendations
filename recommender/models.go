@@ -31,12 +31,8 @@ type createCollectionResponse struct {
 }
 
 type WSMessage struct {
-	MessageType string          `json:"MessageType"`
-	Data        UserDataChanged `json:"Data"`
-}
-
-type UserDataChanged struct {
-	UserDataList []UserDataChangeItem `json:"UserDataList"`
+	MessageType string                `json:"MessageType"`
+	Data        []UserDataChangeItem  `json:"Data"`
 }
 
 type UserDataChangeItem struct {
