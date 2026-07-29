@@ -10,7 +10,7 @@ services:
       SYNC_INTERVAL: "20m"
       COLLECTION_PREFIX: "★ "
       EXCLUDE_USERS: "sample-user"
-      DRY_RUN: "true"
+      DRY_RUN: "false"
       HTTP_TIMEOUT: "30s"
       RETRY_MAX_ATTEMPTS: "3"
       DEBUG: "true"
