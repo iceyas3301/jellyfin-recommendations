@@ -8,7 +8,7 @@ services:
       JELLYFIN_URL: "http://127.0.0.1:8096"
       JELLYFIN_API_KEY: "<jellyfin-api-key-removed>"
       SYNC_INTERVAL: "20m"
-      COLLECTION_PREFIX: "★ "
+      COLLECTION_PREFIX: "Liked by "
       EXCLUDE_USERS: "sample-user"
       DRY_RUN: "false"
       HTTP_TIMEOUT: "30s"

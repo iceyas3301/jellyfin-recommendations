@@ -15,7 +15,7 @@ func (s *StateManager) addUserFavorite(userID, userName, itemID string) error {
 	prefixedName := s.Config.PrefixedName(userName)
 
 	if !exists || len(col.ItemIDs) == 0 {
-		colID, err := s.createCollection(prefixedName, itemID)
+		colID, err := s.createCollectionWithImage(prefixedName, userID, itemID)
 		if err != nil {
 			return err
 		}

@@ -3,6 +3,7 @@ package recommender
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"log"
@@ -180,14 +181,14 @@ func (s *StateManager) createCollectionWithImage(name, userID, initialItemID str
 	if err != nil {
 		return "", err
 	}
-	imageBytes, contentType, err := s.getUserProfilePicture(userID)
+	// Use initialItemID poster as the collection image
+	imageBytes, contentType, err := s.getItemPrimaryImage(initialItemID)
 	if err != nil {
-		log.Printf("Warning: profile picture for %s: %v", userID, err)
+		log.Printf("Warning: poster for %s: %v", initialItemID, err)
 		return newID, nil
 	}
 	if err := s.setCollectionImage(newID, imageBytes, contentType); err != nil {
-		log.Printf("Warning: failed to set collection image for %s: %v", userID, err)
-		// Non-fatal — collection was already created
+		log.Printf("Warning: failed to set collection image for %s: %v", name, err)
 	}
 	return newID, nil
 }
@@ -226,8 +227,8 @@ func (s *StateManager) removeItemFromCollection(collectionID, itemID string) err
 	return s.deleteJellyfin(endpoint)
 }
 
-func (s *StateManager) getUserProfilePicture(userID string) ([]byte, string, error) {
-	reqURL := fmt.Sprintf("%s/Users/%s/Images/Primary", s.Config.ServerURL, userID)
+func (s *StateManager) getItemPrimaryImage(itemID string) ([]byte, string, error) {
+	reqURL := fmt.Sprintf("%s/Items/%s/Images/Primary", s.Config.ServerURL, itemID)
 	req, err := http.NewRequest(http.MethodGet, reqURL, nil)
 	if err != nil {
 		return nil, "", err
@@ -241,7 +242,7 @@ func (s *StateManager) getUserProfilePicture(userID string) ([]byte, string, err
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, "", fmt.Errorf("avatar HTTP %d", resp.StatusCode)
+		return nil, "", fmt.Errorf("poster HTTP %d", resp.StatusCode)
 	}
 
 	ct := resp.Header.Get("Content-Type")
@@ -254,8 +255,12 @@ func (s *StateManager) getUserProfilePicture(userID string) ([]byte, string, err
 }
 
 func (s *StateManager) setCollectionImage(itemID string, imageData []byte, contentType string) error {
+	// Jellyfin expects base64-encoded image body
+	b64Data := make([]byte, base64.StdEncoding.EncodedLen(len(imageData)))
+	base64.StdEncoding.Encode(b64Data, imageData)
+
 	reqURL := fmt.Sprintf("%s/Items/%s/Images/Primary", s.Config.ServerURL, itemID)
-	req, err := http.NewRequest(http.MethodPost, reqURL, bytes.NewReader(imageData))
+	req, err := http.NewRequest(http.MethodPost, reqURL, bytes.NewReader(b64Data))
 	if err != nil {
 		return err
 	}
