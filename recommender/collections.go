@@ -181,14 +181,14 @@ func (s *StateManager) createCollectionWithImage(name, userID, initialItemID str
 	if err != nil {
 		return "", err
 	}
-	// Use initialItemID poster as the collection image
-	imageBytes, contentType, err := s.getItemPrimaryImage(initialItemID)
+	imageBytes, contentType, err := s.getUserProfilePicture(userID)
 	if err != nil {
-		log.Printf("Warning: poster for %s: %v", initialItemID, err)
+		log.Printf("Warning: profile picture for %s: %v", userID, err)
 		return newID, nil
 	}
 	if err := s.setCollectionImage(newID, imageBytes, contentType); err != nil {
 		log.Printf("Warning: failed to set collection image for %s: %v", name, err)
+		// Non-fatal — collection was already created
 	}
 	return newID, nil
 }
@@ -227,8 +227,8 @@ func (s *StateManager) removeItemFromCollection(collectionID, itemID string) err
 	return s.deleteJellyfin(endpoint)
 }
 
-func (s *StateManager) getItemPrimaryImage(itemID string) ([]byte, string, error) {
-	reqURL := fmt.Sprintf("%s/Items/%s/Images/Primary", s.Config.ServerURL, itemID)
+func (s *StateManager) getUserProfilePicture(userID string) ([]byte, string, error) {
+	reqURL := fmt.Sprintf("%s/Users/%s/Images/Primary", s.Config.ServerURL, userID)
 	req, err := http.NewRequest(http.MethodGet, reqURL, nil)
 	if err != nil {
 		return nil, "", err
@@ -242,7 +242,7 @@ func (s *StateManager) getItemPrimaryImage(itemID string) ([]byte, string, error
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, "", fmt.Errorf("poster HTTP %d", resp.StatusCode)
+		return nil, "", fmt.Errorf("avatar HTTP %d", resp.StatusCode)
 	}
 
 	ct := resp.Header.Get("Content-Type")
