@@ -51,13 +51,14 @@ func (s *StateManager) StartWebSocketListener(ctx context.Context) {
 		backoff = time.Second
 		log.Println("Connected to Jellyfin WebSocket")
 
-		// Subscribe to session updates
-		subMsg := `{"MessageType":"SessionsStart","Data":"0,1000"}`
+		// Subscribe to UserDataChanged events (favorites, watched, etc.)
+		subMsg := `{"MessageType":"UserDataChanged","Data":"0,1000"}`
 		if err := conn.WriteMessage(websocket.TextMessage, []byte(subMsg)); err != nil {
 			log.Printf("Failed to send subscription: %v", err)
 			conn.Close()
 			continue
 		}
+		log.Println("Subscribed to UserDataChanged events")
 
 		// Read loop with context cancellation
 		done := make(chan struct{})
@@ -73,9 +74,11 @@ func (s *StateManager) StartWebSocketListener(ctx context.Context) {
 
 				var msg WSMessage
 				if err := json.Unmarshal(messageBytes, &msg); err != nil {
+					log.Printf("WS: unparsed message: %s", string(messageBytes))
 					continue
 				}
 
+				log.Printf("WS: received %s", msg.MessageType)
 				if msg.MessageType == "UserDataChanged" {
 					s.handleUserDataChanged(msg.Data)
 				}

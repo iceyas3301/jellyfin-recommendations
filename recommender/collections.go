@@ -45,6 +45,8 @@ func (s *StateManager) reconcileCollections(ctx context.Context, users []user) e
 				expectedItems[itemID] = true
 			}
 		}
+		log.Printf("Reconcile plan: user=%s (%s), prefixed=%q, existing=%q, favorites=%d",
+			user.Name, user.ID, prefixedName, existingCollections[prefixedName], len(expectedItems))
 		plans = append(plans, userPlan{
 			user:          user,
 			prefixedName:  prefixedName,
@@ -100,6 +102,7 @@ func (s *StateManager) reconcileCollections(ctx context.Context, users []user) e
 			log.Printf("Failed to read items for collection %q: %v", plan.prefixedName, err)
 			actualItems = make(map[string]bool)
 		}
+		log.Printf("Collection %q: %d actual items, %d expected", plan.prefixedName, len(actualItems), len(plan.expectedItems))
 
 		// Add missing items
 		for itemID := range plan.expectedItems {
@@ -147,7 +150,7 @@ func (s *StateManager) reconcileCollections(ctx context.Context, users []user) e
 }
 
 func (s *StateManager) getCollectionItemIDs(collectionID string) (map[string]bool, error) {
-	endpoint := fmt.Sprintf("/Items?parentId=%s", collectionID)
+	endpoint := fmt.Sprintf("/Items?parentId=%s&recursive=true", collectionID)
 	resp, err := getJellyfin[queryUserFavoritesResponse](s, endpoint)
 	if err != nil {
 		return nil, err
@@ -183,7 +186,8 @@ func (s *StateManager) createCollectionWithImage(name, userID, initialItemID str
 		return newID, nil
 	}
 	if err := s.setCollectionImage(newID, imageBytes, contentType); err != nil {
-		return newID, fmt.Errorf("set image: %w", err)
+		log.Printf("Warning: failed to set collection image for %s: %v", userID, err)
+		// Non-fatal — collection was already created
 	}
 	return newID, nil
 }
