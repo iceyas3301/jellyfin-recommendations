@@ -105,22 +105,22 @@ func (s *StateManager) StartWebSocketListener(ctx context.Context) {
 	}
 }
 
-func (s *StateManager) handleUserDataChanged(data []UserDataChangeItem) {
-	for _, change := range data {
-		userID := change.UserID
+func (s *StateManager) handleUserDataChanged(data UserDataChanged) {
+	userID := data.UserID
+	userName := s.getUserNameByID(userID)
+	if userName == "" {
+		s.logf("WS: unknown user %s, skipping", userID)
+		return
+	}
+
+	if s.Config.IsUserExcluded(userID, userName) {
+		s.logf("WS: skipping excluded user %s", userName)
+		return
+	}
+
+	for _, change := range data.UserDataList {
 		itemID := change.ItemID
-		isFav := change.Data.IsFavorite
-
-		userName := s.getUserNameByID(userID)
-		if userName == "" {
-			s.logf("WS: unknown user %s, skipping", userID)
-			continue
-		}
-
-		if s.Config.IsUserExcluded(userID, userName) {
-			s.logf("WS: skipping excluded user %s", userName)
-			continue
-		}
+		isFav := change.IsFavorite
 
 		if isFav {
 			log.Printf("WS: %s favorited %s", userName, itemID)

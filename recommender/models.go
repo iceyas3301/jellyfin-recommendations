@@ -31,14 +31,16 @@ type createCollectionResponse struct {
 }
 
 type WSMessage struct {
-	MessageType string                `json:"MessageType"`
-	Data        []UserDataChangeItem  `json:"Data"`
+	MessageType string          `json:"MessageType"`
+	Data        UserDataChanged `json:"Data"`
+}
+
+type UserDataChanged struct {
+	UserID       string                `json:"UserId"`
+	UserDataList []UserDataChangeItem  `json:"UserDataList"`
 }
 
 type UserDataChangeItem struct {
-	UserID string `json:"UserId"`
-	ItemID string `json:"ItemId"`
-	Data   struct {
-		IsFavorite bool `json:"IsFavorite"`
-	} `json:"UserData"`
+	ItemID     string `json:"ItemId"`
+	IsFavorite bool   `json:"IsFavorite"`
 }
