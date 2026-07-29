@@ -48,14 +48,11 @@ func main() {
 	}
 	log.Println("Initial sync complete")
 
-	// Start WebSocket listener in background
-	go state.StartWebSocketListener(ctx)
-
 	// Periodic sync ticker
 	ticker := time.NewTicker(cfg.SyncInterval)
 	defer ticker.Stop()
 
-	log.Printf("Listening for changes (sync every %s, WS realtime)", cfg.SyncInterval)
+	log.Printf("Listening for changes (sync every %s)", cfg.SyncInterval)
 
 	for {
 		select {

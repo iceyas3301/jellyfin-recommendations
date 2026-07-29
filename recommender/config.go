@@ -16,7 +16,6 @@ type Config struct {
 
 	// Sync behavior
 	SyncInterval    time.Duration
-	WSReconnectMax  time.Duration // max backoff for WS reconnect
 	HTTPRequestTimeout time.Duration
 	RetryMaxAttempts int
 	RetryBaseDelay   time.Duration
@@ -53,7 +52,6 @@ func LoadConfig() (*Config, error) {
 		ServerURL:          normalizedURL,
 		APIKey:             apiKey,
 		SyncInterval:       getDurationEnv("SYNC_INTERVAL", 20*time.Minute),
-		WSReconnectMax:     getDurationEnv("WS_RECONNECT_MAX", 5*time.Minute),
 		HTTPRequestTimeout: getDurationEnv("HTTP_TIMEOUT", 30*time.Second),
 		RetryMaxAttempts:   getIntEnv("RETRY_MAX_ATTEMPTS", 3),
 		RetryBaseDelay:     getDurationEnv("RETRY_BASE_DELAY", 2*time.Second),
