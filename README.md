@@ -24,7 +24,7 @@ All behavior is configurable via environment variables:
 | `DRY_RUN` | `false` | Log planned changes without applying |
 | `HTTP_TIMEOUT` | `30s` | HTTP request timeout |
 | `RETRY_MAX_ATTEMPTS` | `3` | Retry attempts for failed HTTP calls |
-| `WS_RECONNECT_MAX` | `5m` | Max backoff for WebSocket reconnection |
+| `RETRY_BASE_DELAY` | `2s` | Base delay for retry backoff |
 | `DEBUG` | `false` | Enable verbose debug logging |
 
 ### Safety Features
@@ -36,7 +36,7 @@ All behavior is configurable via environment variables:
 - **HTTP timeouts**: All requests have configurable timeouts
 - **Exponential backoff**: Failed HTTP calls retry with backoff
 - **Thread safety**: Lock held only during in-memory state updates, not during HTTP calls
-- **Merge-safe hydration**: Poll results merge with WebSocket real-time updates
+- **Poll-based reconcile**: one periodic pass per `SYNC_INTERVAL` (see below for why there is no WebSocket listener)
 - **Context cancellation**: All operations respect context for clean shutdown
 
 ## Deployment
@@ -56,10 +56,23 @@ docker run -d \
 
 ### Docker Compose
 
+`compose.yaml` reads machine-local values (including the API key) from an untracked
+`.env` file in the same directory — never commit that file:
+
 ```bash
-# Edit docker-compose.yml with your settings, then:
-docker compose up -d
+cat > .env <<'EOF'
+JELLYFIN_URL=http://127.0.0.1:8096
+JELLYFIN_API_KEY=your-api-key
+SYNC_INTERVAL=4h
+COLLECTION_PREFIX=Liked by
+EXCLUDE_USERS=admin
+EOF
+
+docker compose up -d --build
+docker compose config          # confirm the resolved environment before starting
 ```
+
+`.env` is git-ignored; only `compose.yaml` (placeholders + safe defaults) is committed.
 
 ### First run
 
@@ -69,7 +82,8 @@ docker compose up -d
 
 ## How It Works
 
-1. **Poll mode** (every 20min): Fetches all users and their favorites, reconciles collections
-2. **WebSocket** (realtime): Listens for `UserDataChanged` events to add/remove favorites instantly
+1. **Poll mode** (every `SYNC_INTERVAL`, default 20m): Fetches all users and their favorites, reconciles collections
+   > `UserDataChanged` WebSocket events are deliberately **not** used on this fork: Jellyfin only routes them
+   > to user-specific sessions, so a server-wide API-key listener never receives them. Polling is the reliable path.
 3. **Collection sync**: For each user, creates/updates/deletes a Collection matching their current favorites
 4. **Profile pictures**: Sets the user profile picture as the collection cover image

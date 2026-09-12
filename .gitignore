@@ -1,3 +1,6 @@
+# Local deployment secrets (Jellyfin API key, URLs)
+.env
+
 # Binaries
 *.exe
 *.exe~

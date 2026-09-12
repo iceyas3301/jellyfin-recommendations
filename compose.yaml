@@ -4,13 +4,17 @@ services:
     container_name: jellyfin-recommendations
     restart: unless-stopped
     network_mode: host
+    # Machine-local values (incl. the Jellyfin API key) come from the untracked .env.
+    # Copy the sample below into a .env file next to this compose.yaml and edit it:
+    #   JELLYFIN_URL=http://127.0.0.1:8096
+    #   JELLYFIN_API_KEY=<a Jellyfin API key>
     environment:
-      JELLYFIN_URL: "http://127.0.0.1:8096"
-      JELLYFIN_API_KEY: "<jellyfin-api-key-removed>"
-      SYNC_INTERVAL: "24h"
-      COLLECTION_PREFIX: "Liked by "
-      EXCLUDE_USERS: "sample-user"
-      DRY_RUN: "false"
-      HTTP_TIMEOUT: "30s"
-      RETRY_MAX_ATTEMPTS: "3"
-      DEBUG: "false"
+      JELLYFIN_URL: "${JELLYFIN_URL:-http://127.0.0.1:8096}"
+      JELLYFIN_API_KEY: "${JELLYFIN_API_KEY:?set JELLYFIN_API_KEY in .env}"
+      SYNC_INTERVAL: "${SYNC_INTERVAL:-4h}"
+      COLLECTION_PREFIX: "${COLLECTION_PREFIX:-Liked by }"
+      EXCLUDE_USERS: "${EXCLUDE_USERS:-sample-user}"
+      DRY_RUN: "${DRY_RUN:-false}"
+      HTTP_TIMEOUT: "${HTTP_TIMEOUT:-30s}"
+      RETRY_MAX_ATTEMPTS: "${RETRY_MAX_ATTEMPTS:-3}"
+      DEBUG: "${DEBUG:-false}"
