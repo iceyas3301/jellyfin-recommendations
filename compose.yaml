@@ -13,7 +13,8 @@ services:
       JELLYFIN_API_KEY: "${JELLYFIN_API_KEY:?set JELLYFIN_API_KEY in .env}"
       SYNC_INTERVAL: "${SYNC_INTERVAL:-4h}"
       COLLECTION_PREFIX: "${COLLECTION_PREFIX:-Liked by }"
-      EXCLUDE_USERS: "${EXCLUDE_USERS:-sample-user}"
+      # comma-separated Jellyfin usernames to skip (keep personal names in .env, not here)
+      EXCLUDE_USERS: "${EXCLUDE_USERS:-}"
       DRY_RUN: "${DRY_RUN:-false}"
       HTTP_TIMEOUT: "${HTTP_TIMEOUT:-30s}"
       RETRY_MAX_ATTEMPTS: "${RETRY_MAX_ATTEMPTS:-3}"
